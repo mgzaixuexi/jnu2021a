@@ -22,6 +22,10 @@ module  lcd_rgb_char(
 	input      [31:0]  data      ,
     input      [7:0 ]  ad_data   ,
     input              ad_clk,
+
+	output [5:0] seg_sel,
+	output [7:0] seg_led,
+
 	//RGB LCD接口 
     output             lcd_hs    , //LCD 行同步信号
     output             lcd_vs    , //LCD 场同步信号
@@ -92,6 +96,8 @@ lcd_display  u_lcd_display(
     .sys_rst_n      (sys_rst_n   ),
     .ad_clk         (ad_clk ),
     .ad_data        (ad_data     ),
+	.seg_sel        (seg_sel),
+	.seg_led        (seg_led),
     .data_in        (data        ),
     .bcd_data       ({bcd_data_x,bcd_data_y}),
     .pixel_xpos     (pixel_xpos_w),

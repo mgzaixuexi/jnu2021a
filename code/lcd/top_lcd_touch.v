@@ -20,9 +20,13 @@ module top_lcd_touch(
     input            sys_clk    ,  //系统时钟信号
     input            sys_rst_n  ,  //系统复位信号
 
-    output            ad_otr,
+    //output            ad_otr,
     output            ad_clk,
     input   [7:0]    ad_data,
+
+	output [5:0] seg_sel,
+	output [7:0] seg_led,
+
     //TOUCH 接口                  
     inout            touch_sda  ,  //TOUCH IIC数据
     output           touch_scl  ,  //TOUCH IIC时钟
@@ -47,8 +51,8 @@ wire  [31:0]  data       ;      //触摸点坐�?
 //**                    main code
 //*****************************************************                                       
 clk_wiz_0 u_clk_div( 
-    .clk_out1(clk_12M),
-    .reset(sys_rst_n),
+    .clk_out1(ad_clk),
+    //.reset(sys_rst_n),
     .clk_in1(sys_clk)
   );
 //触摸驱动顶层模块    
@@ -70,9 +74,11 @@ lcd_rgb_char  u_lcd_rgb_char
 (
    .sys_clk         (sys_clk  ),
    .sys_rst_n       (sys_rst_n),
-   .ad_clk          (clk_12M  ),
+   .ad_clk          (ad_clk  ),
    .ad_data         (ad_data  ),
    .data            (data     ),
+	.seg_sel        (seg_sel),
+    .seg_led        (seg_led),   
    //RGB LCD接口 
    .lcd_id          (lcd_id   ),
    .lcd_hs          (lcd_hs   ),
@@ -83,5 +89,7 @@ lcd_rgb_char  u_lcd_rgb_char
    .lcd_rst_n       (lcd_rst_n),
    .lcd_clk         (lcd_clk  )
 );
+
+
 
 endmodule 

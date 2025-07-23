@@ -1,5 +1,11 @@
+#时序约束
+create_clock -period 20.000 -name sys_clk [get_ports sys_clk]
 
+#IO管脚约束
+set_property -dict {PACKAGE_PIN R4 IOSTANDARD LVCMOS33} [get_ports sys_clk]
+set_property -dict {PACKAGE_PIN U2 IOSTANDARD LVCMOS33} [get_ports sys_rst_n]
 
+#--------------------------------RGB LCD------------------------------------------
 set_property -dict {PACKAGE_PIN R16 IOSTANDARD LVCMOS33} [get_ports {lcd_rgb[0]}]
 set_property -dict {PACKAGE_PIN P15 IOSTANDARD LVCMOS33} [get_ports {lcd_rgb[1]}]
 set_property -dict {PACKAGE_PIN R14 IOSTANDARD LVCMOS33} [get_ports {lcd_rgb[2]}]
@@ -30,7 +36,7 @@ set_property -dict {PACKAGE_PIN U7 IOSTANDARD LVCMOS33} [get_ports lcd_vs]
 set_property -dict {PACKAGE_PIN AB7 IOSTANDARD LVCMOS33} [get_ports lcd_de]
 set_property -dict {PACKAGE_PIN V7 IOSTANDARD LVCMOS33} [get_ports lcd_bl]
 set_property -dict {PACKAGE_PIN Y9 IOSTANDARD LVCMOS33} [get_ports lcd_clk]
-set_property -dict {PACKAGE_PIN W7 IOSTANDARD LVCMOS33} [get_ports lcd_rst]
+set_property -dict {PACKAGE_PIN W7 IOSTANDARD LVCMOS33} [get_ports lcd_rst_n]
 
 #LCD TOUCH
 set_property -dict {PACKAGE_PIN Y8 IOSTANDARD LVCMOS33} [get_ports touch_scl]
@@ -38,26 +44,12 @@ set_property -dict {PACKAGE_PIN AB8 IOSTANDARD LVCMOS33} [get_ports touch_sda]
 set_property -dict {PACKAGE_PIN Y7 IOSTANDARD LVCMOS33} [get_ports touch_int]
 set_property -dict {PACKAGE_PIN AB6 IOSTANDARD LVCMOS33} [get_ports touch_rst_n]
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+set_property -dict {IOSTANDARD LVCMOS33 PACKAGE_PIN K22} [get_ports {ad_data[7]}]
+set_property -dict {IOSTANDARD LVCMOS33 PACKAGE_PIN K21} [get_ports {ad_data[6]}]
+set_property -dict {IOSTANDARD LVCMOS33 PACKAGE_PIN J22} [get_ports {ad_data[5]}]
+set_property -dict {IOSTANDARD LVCMOS33 PACKAGE_PIN H22} [get_ports {ad_data[4]}]
+set_property -dict {IOSTANDARD LVCMOS33 PACKAGE_PIN G22} [get_ports {ad_data[3]}]
+set_property -dict {IOSTANDARD LVCMOS33 PACKAGE_PIN G21} [get_ports {ad_data[2]}]
+set_property -dict {IOSTANDARD LVCMOS33 PACKAGE_PIN E19} [get_ports {ad_data[1]}]
+set_property -dict {IOSTANDARD LVCMOS33 PACKAGE_PIN D19} [get_ports {ad_data[0]}]
+set_property -dict {IOSTANDARD LVCMOS33 PACKAGE_PIN M21} [get_ports ad_clk]

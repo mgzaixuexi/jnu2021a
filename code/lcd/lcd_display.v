@@ -1,20 +1,4 @@
-//****************************************Copyright (c)***********************************//
-//原子哥在线教学平台：www.yuanzige.com
-//技术支持：http://www.openedv.com/forum.php
-//淘宝店铺：https://zhengdianyuanzi.tmall.com
-//关注微信公众平台微信号："正点原子"，免费获取ZYNQ & FPGA & STM32 & LINUX资料。
-//版权所有，盗版必究。
-//Copyright(C) 正点原子 2023-2033
-//All rights reserved                                  
-//----------------------------------------------------------------------------------------
-// File name:           lcd_display
-// Created by:          正点原子
-// Created date:        2023年5月18日14:17:02
-// Version:             V1.0
-// Descriptions:        RGB LCD显示模块
-//
-//----------------------------------------------------------------------------------------
-//****************************************************************************************//
+
 
 module lcd_display(
     input             lcd_pclk,                 //lcd驱动时钟
@@ -23,7 +7,10 @@ module lcd_display(
     input             ad_clk,
     input      [31:0] data_in  ,
     input      [31:0] bcd_data ,
-    
+
+	output [5:0] seg_sel,
+	output [7:0] seg_led,
+
     input      [10:0] pixel_xpos,               //像素点横坐标
     input      [10:0] pixel_ypos,               //像素点纵坐标
     output reg [23:0] pixel_data,               //像素点数据,
@@ -503,7 +490,6 @@ wire [7:0] wave_data;      // 波形RAM数据
 reg  wave_write_en;        // 波形写入使能
 reg  wave_read_en;         // 波形读取使能
 reg  [8:0] write_counter;  // 写入计数器
-reg  [8:0] read_counter;   // 读取计数器
 reg  [1:0] button_state;   // 按钮状态寄存器
 
 // 在always块中添加按钮状态控制逻辑
@@ -538,7 +524,9 @@ always @(posedge ad_clk or negedge sys_rst_n) begin
     end
 end
 wire [7:0] wave_data1;
-assign wave_data = wave_data1*5;
+wire [8:0] read_counter;   // 读取计数器
+assign wave_data = wave_data1 + 8'd10;
+assign read_counter = (pixel_xpos > WAVE_AREA_X)?(pixel_xpos - WAVE_AREA_X):0;
 // 修改RAM实例化部分
 lcd_ram u_lcd_ram(
   .clka(ad_clk),          // ADC时钟作为写时钟
@@ -548,13 +536,21 @@ lcd_ram u_lcd_ram(
   .dina(ad_data),         // ADC数据输入
   .clkb(lcd_pclk),        // LCD时钟作为读时钟
   .enb(wave_read_en),     // 读取使能
-  .addrb(pixel_xpos - WAVE_AREA_X),  // 读地址对应X坐标
+  .addrb(read_counter),  // 读地址对应X坐标
   .doutb(wave_data1)       // 波形数据输出
 );
 
 // 输出按钮状态
 assign data_out = {30'b0, button_state};
-
+seg_led seg_led_inst(
+    .sys_clk(lcd_pclk),//绯荤粺鏃堕挓
+	.sys_rst_n(sys_rst_n),
+	.num1(ad_clk),//鎺req_select1锛屾垨鑰呰鏄痺aveA_freq
+	.num2(ad_data),//鎺req_select2锛屾垨鑰呰鏄痺aveB_freq
+	.num3(write_counter),//鎺r_done
+	.seg_sel(seg_sel),
+	.seg_led(seg_led)
+    );
 
 endmodule //注意，输入变量data_in是bcd_data在bcd变换之前的值，data_in前16位代表屏幕位置的横坐标，后16位触碰屏幕位置的纵坐标，显示屏的尺寸是800*480.
 //这份代码左上角前四个数字动态显示触碰屏幕位置的横坐标，然后是字符X，然后是3个数字动态显示触碰屏幕位置的纵坐标，然后是字符Y。
