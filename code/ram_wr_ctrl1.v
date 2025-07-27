@@ -18,16 +18,18 @@ begin
 		flag <= 1;
 	end
 	else 
-	if(flag)
 	begin
-		wr_addr <= wr_addr + 1'b1;
-		if(wr_addr>=12'd4094) 
-		begin 
-			wr_done <= 1'd1;
-			flag<=0;
+		if(flag)
+		begin
+			if(wr_addr>=12'd4095) 
+			begin 
+				wr_done <= 1'd1;
+				flag<=0;
+			end
+			else wr_addr <= wr_addr + 1'b1;
 		end
+		else wr_done <= 1'd1;
 	end
-	else wr_done <= 1'd1;
 end
 
 endmodule

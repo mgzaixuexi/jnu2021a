@@ -3,35 +3,60 @@ module ad(
     input clk_50m,
     input clk_640k,
     input clk_256k,
-    input key_value,
+    input [2:0]key_value,
     input rst_n,
-    input clk_1m
+    input clk_1m,
+
+    output [15:0]THD,
+    output freq_valid,
+    output wr_done,
+    output wr_done1,
+    output [15:0] harmonic2,
+    output [15:0] harmonic3,
+    output [15:0] harmonic4,
+    output [15:0] harmonic5,
+    output  [15:0] fundamental,
+    output [7:0]freq,
+    output [15:0]max_index
 );
 
+wire key_valid;
+// FFT控制模块
+fft_ctrl u_fft_ctrl(
+    .clk(clk_50m),
+    .rst_n(rst_n),
+    .key(key_value),          // 启动按键
+    .fft_shutdown(fft_shutdown),
+    .fft_valid(key_valid)
+);
 
-wire [7:0]freq;
-wire freq_valid;
-// wave_freq u_wave_freq(
-//     .ad_data(ad_data), //1k-100kHz
-//     . clk_256k(clk_256k),
-//     . clk_50m(clk_50m),
-//     . rst_n(rst_n),
-//     . freq(freq),
-//     .freq_valid(freq_valid)
-// );
+// wire [7:0]freq;
+// wire freq_valid;
+wave_freq u_wave_freq(
+    .ad_data(ad_data), //1k-100kHz
+    . clk_256k(clk_256k),
+    . clk_50m(clk_50m),
+    . rst_n(key_valid&rst_n),
+    . freq(freq),
+    .freq_valid(freq_valid)
+);
 
-assign freq_valid = 1;
-assign freq = 8'd4; 
+// assign freq_valid = 1;
+// assign freq = 8'd26; 
+
 reg  [9:0]data_in;
+wire [7:0]dividen;
+assign dividen = 1010/(freq*2)-1;
 reg clk_in;
 integer i;
 always @(posedge clk_1m or negedge rst_n) begin
     if(~rst_n) begin i<=0;clk_in<=0;end
     else 
     begin
-            if(freq_valid)begin
+        if(freq_valid)
+        begin
             i<=i+1;
-            if(i==1100/(freq*2)-1)
+            if(i==dividen)
             begin
                 clk_in<=~clk_in;
                 i<=0;
@@ -55,7 +80,7 @@ wire [9:0] ram_data_in;
 wire [9:0] fft_data_in;
 
 
-wire wr_done1;
+// wire wr_done1;
  ram_wr_ctrl1 u_ram_wr_ctrl1
 (
 	.clk(clk_in),//读取数据时钟
@@ -71,7 +96,7 @@ ram_4096x10 u_ram_4096x10 (
   .wea(1),      // input wire [0 : 0] wea
   .addra(ram_addr_in),  // input wire [11 : 0] addra
   .dina(ram_data_in),    // input wire [9 : 0] dina
-  .clkb(clk_640k),    // input wire clkb
+  .clkb(~clk_640k),    // input wire clkb
   .addrb(fft_addr_in),  // input wire [11 : 0] addrb
   .doutb(fft_data_in)  // output wire [9 : 0] doutb
 );
@@ -101,7 +126,7 @@ wire       fft_s_config_tready;
 
 assign fft_s_data_tdata = {6'b0,fft_data_in[9:0]};  
 
-wire 		fft_shutdown;
+// wire 		fft_shutdown;
 
 
 // //fft控制模块，按键启动fft，ram写入完成后关�??
@@ -152,8 +177,8 @@ wire [15:0] data_modulus;
 wire [15:0] wr_data;
 wire [11:0] wr_addr;
 wire wr_en;
-wire wr_done;
 
+wire data_valid;
 ram_wr_ctrl u_ram_wr_ctrl(
 	.clk(clk_640k),//fft时钟
 	.rst_n(rst_n),//复位，接（rst_n&key）key是启动键
@@ -166,7 +191,7 @@ ram_wr_ctrl u_ram_wr_ctrl(
 );
 
 ram_4096x16 u_ram_4096x16 (
-  .clka(clk_640k),    // fft时钟
+  .clka(~clk_640k),    // fft时钟
   .wea(wr_en),      // input wire [0 : 0] wea
   .addra(wr_addr),  // input wire [11 : 0] addra
   .dina(wr_data),    // input wire [15 : 0] dina
@@ -204,12 +229,11 @@ data_modulus u_data_modulus(
 
 // assign THD_t = (Uo2*Uo2)+(Uo3*Uo3)+(Uo4*Uo4)+(Uo5*Uo5);
 
-wire [15:0] fundamental;
-wire [15:0] harmonic2;
-wire [15:0] harmonic3;
-wire [15:0] harmonic4;
-wire [15:0] harmonic5;
-wire [15:0] THD;
+// wire [15:0] fundamental;
+// wire [15:0] harmonic2;
+// wire [15:0] harmonic3;
+// wire [15:0] harmonic4;
+// wire [15:0] harmonic5;
 
 THD_calculator uut (
     .clk(clk_50m),
@@ -223,7 +247,8 @@ THD_calculator uut (
     .harmonic4(harmonic4),
     .harmonic5(harmonic5),
     .THD(THD),
-    .done(done)
+    .done(done),
+    .max_index(max_index)
 );
 
 
